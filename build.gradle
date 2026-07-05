@@ -1,0 +1,60 @@
+plugins {
+	id 'fabric-loom' version '1.9-SNAPSHOT'
+	id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	// Add repositories to retrieve artifacts from in here if you need extra libraries.
+	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
+}
+
+loom {
+	// This mod's code lives in src/client/java (client-only code).
+	// splitEnvironmentSourceSets() tells Loom to compile that folder
+	// as client-only code, separate from src/main/java (common code).
+	splitEnvironmentSourceSets()
+
+	mods {
+		"autototem" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+dependencies {
+	// Minecraft itself
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	// Use Mojang's official mappings (readable method/field names)
+	mappings loom.officialMojangMappings()
+	// Fabric loader
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API (gives us key bindings + tick events)
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
